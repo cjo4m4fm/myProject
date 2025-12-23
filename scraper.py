@@ -1,5 +1,4 @@
 import random
-import time
 from playwright.sync_api import sync_playwright, TimeoutError
 from playwright_stealth import stealth_sync
 
@@ -8,8 +7,7 @@ AMAZON_URL = "https://www.amazon.com/dp/B00VH84L5E?psc=1"
 
 def get_amazon_reviews(url):
     """
-    Fetches and parses reviews from an Amazon product page using Playwright,
-    with techniques to appear more human.
+    Fetches and parses reviews from an Amazon product page using Playwright.
     """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -21,13 +19,11 @@ def get_amazon_reviews(url):
         stealth_sync(page)
         try:
             page.goto(url, wait_until='domcontentloaded', timeout=60000)
-            time.sleep(random.uniform(2, 4)) # Random delay
 
             try:
                 # Try to click the button if it appears
                 page.locator('text="Continue shopping"').click(timeout=5000)
                 print("Intermediate page detected. Clicked 'Continue shopping'.")
-                time.sleep(random.uniform(1, 3)) # Random delay after click
             except TimeoutError:
                 # This is expected if we land directly on the product page
                 print("No intermediate page detected, proceeding.")
@@ -36,7 +32,6 @@ def get_amazon_reviews(url):
             print("Scrolling down to load reviews...")
             for i in range(random.randint(3, 6)):
                 page.evaluate(f"window.scrollBy(0, {random.randint(500, 1000)})")
-                time.sleep(random.uniform(0.5, 1.5))
 
             # Wait for the review section to load
             page.wait_for_selector('[data-hook="review-body"]', timeout=30000)
