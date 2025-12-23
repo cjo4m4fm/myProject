@@ -2,6 +2,9 @@ import random
 import asyncio
 from playwright.async_api import async_playwright, TimeoutError
 from playwright_stealth import stealth_async
+import nest_asyncio
+
+nest_asyncio.apply()
 
 # URL of the Amazon product page
 AMAZON_URL = "https://www.amazon.com/dp/B00VH84L5E?psc=1"
