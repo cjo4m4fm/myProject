@@ -1,4 +1,4 @@
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError
 
 # URL of the Amazon product page
 AMAZON_URL = "https://www.amazon.com/dp/B00VH84L5E?psc=1"
@@ -16,8 +16,21 @@ def get_amazon_reviews(url):
         try:
             page.goto(url, wait_until='domcontentloaded', timeout=60000)
 
+            try:
+                # Try to click the button if it appears within 5 seconds
+                page.locator('text="Continue shopping"').click(timeout=5000)
+                print("Intermediate page detected. Clicked 'Continue shopping'.")
+            except TimeoutError:
+                # This is expected if we land directly on the product page
+                print("No intermediate page detected, proceeding.")
+
+            # Scroll down to load reviews
+            print("Scrolling down to load reviews...")
+            page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+            page.wait_for_timeout(3000) # Wait for content to load
+
             # Wait for the review section to load
-            page.wait_for_selector('[data-hook="review-body"]', timeout=20000)
+            page.wait_for_selector('[data-hook="review-body"]', timeout=30000)
 
             review_elements = page.query_selector_all('[data-hook="review-body"]')
 
@@ -30,6 +43,8 @@ def get_amazon_reviews(url):
 
         except Exception as e:
             print(f"An error occurred: {e}")
+            page.screenshot(path="error_screenshot.png")
+            print("Screenshot saved to error_screenshot.png")
         finally:
             browser.close()
 
